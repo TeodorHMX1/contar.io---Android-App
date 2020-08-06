@@ -6,10 +6,12 @@ import android.support.v7.app.AppCompatActivity;
 
 import io.contar.app.activities.WebsiteViewActivity;
 
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends AppCompatActivity
+{
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         Intent intent = new Intent(this, WebsiteViewActivity.class);

@@ -4,9 +4,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.net.http.SslError;
@@ -18,7 +16,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
@@ -27,8 +24,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -37,7 +32,8 @@ import com.warhammer.defience.R;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class WebsiteViewActivity extends AppCompatActivity {
+public class WebsiteViewActivity extends AppCompatActivity
+{
 
     @BindView(R.id.webViewGame)
     WebView mWebview;
@@ -46,9 +42,11 @@ public class WebsiteViewActivity extends AppCompatActivity {
     private Context mContext;
     private String url;
     private boolean alreadyShown = false;
+    private AlertDialog builder;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_website_view);
         ButterKnife.bind(this);
@@ -72,22 +70,26 @@ public class WebsiteViewActivity extends AppCompatActivity {
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            cookieManager.setAcceptThirdPartyCookies(mWebview,true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            cookieManager.setAcceptThirdPartyCookies(mWebview, true);
         }
 
         //mWebview.loadUrl(target_url);
 
-        mContext=this.getApplicationContext();
+        mContext = this.getApplicationContext();
 
-        ClipboardManager.OnPrimaryClipChangedListener mPrimaryChangeListener = new ClipboardManager.OnPrimaryClipChangedListener() {
-            public void onPrimaryClipChanged() {
+        ClipboardManager.OnPrimaryClipChangedListener mPrimaryChangeListener = new ClipboardManager.OnPrimaryClipChangedListener()
+        {
+            public void onPrimaryClipChanged()
+            {
 
                 ClipboardManager clipBoard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 ClipData.Item item = clipBoard.getPrimaryClip().getItemAt(0);
                 final String pasteData = item.getText().toString();
 
-                if (pasteData.contains(url) && pasteData.contains("/p/") && !alreadyShown) {
+                if (pasteData.contains(url) && pasteData.contains("/p/") && !alreadyShown)
+                {
                     alreadyShown = true;
                     hideKeyboard(WebsiteViewActivity.this);
                     new MaterialDialog.Builder(WebsiteViewActivity.this)
@@ -101,17 +103,21 @@ public class WebsiteViewActivity extends AppCompatActivity {
                             .negativeColor(Color.parseColor("#212121"))
                             .positiveColor(Color.parseColor("#2196F3"))
                             .backgroundColor(Color.parseColor("#ffffff"))
-                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            .onPositive(new MaterialDialog.SingleButtonCallback()
+                            {
                                 @Override
-                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which)
+                                {
                                     alreadyShown = false;
                                     confirmShare(pasteData);
                                 }
                             })
                             .negativeText("No")
-                            .onNegative(new MaterialDialog.SingleButtonCallback() {
+                            .onNegative(new MaterialDialog.SingleButtonCallback()
+                            {
                                 @Override
-                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which)
+                                {
                                     alreadyShown = false;
                                 }
                             })
@@ -172,25 +178,68 @@ public class WebsiteViewActivity extends AppCompatActivity {
                 }
             }
         });*/
-        if (appLinkData != null) {
+        if (appLinkData != null)
+        {
             mWebview.loadUrl(url + appLinkData.getPath());
-        } else {
+        } else
+        {
             mWebview.loadUrl(url);
         }
     }
 
-    private class UriWebViewClient extends WebViewClient {
+    public void hideKeyboard(Activity activity)
+    {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null)
+        {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    private void confirmShare(String pasteData)
+    {
+
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out my social networks on contar.io at the following link: " + pasteData);
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
+
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        if (mWebview.canGoBack())
+        {
+            mWebview.goBack();
+        } else
+        {
+            finish();
+        }
+    }
+
+    private class UriWebViewClient extends WebViewClient
+    {
 
         @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        public boolean shouldOverrideUrlLoading(WebView view, String url)
+        {
 
             String host = Uri.parse(url).getHost();
             assert host != null;
-            if (url.contains("https://contar.io/")) {
+            if (url.contains("https://contar.io/"))
+            {
                 return false;
-            } else if(host.equals("m.facebook.com")){
+            } else if (host.equals("m.facebook.com"))
+            {
                 return false;
-            } else {
+            } else
+            {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(url));
                 startActivity(intent);
@@ -212,21 +261,22 @@ public class WebsiteViewActivity extends AppCompatActivity {
         }
 
 
-
         @Override
         public void onReceivedSslError(WebView view, SslErrorHandler handler,
-                                       SslError error) {
+                                       SslError error)
+        {
             Log.d("onReceivedSslError", "onReceivedSslError");
             //super.onReceivedSslError(view, handler, error);
         }
     }
 
-    private AlertDialog builder;
-    class UriChromeClient extends WebChromeClient {
+    class UriChromeClient extends WebChromeClient
+    {
 
         @Override
         public boolean onCreateWindow(WebView view, boolean isDialog,
-                                      boolean isUserGesture, Message resultMsg) {
+                                      boolean isUserGesture, Message resultMsg)
+        {
             mWebviewPop = new WebView(mContext);
             mWebviewPop.setVerticalScrollBarEnabled(false);
             mWebviewPop.setHorizontalScrollBarEnabled(false);
@@ -256,13 +306,14 @@ public class WebsiteViewActivity extends AppCompatActivity {
             builder.setView(mWebviewPop);
 
             builder.show();
-            builder.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+            builder.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 
 
             CookieManager cookieManager = CookieManager.getInstance();
             cookieManager.setAcceptCookie(true);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                cookieManager.setAcceptThirdPartyCookies(mWebviewPop,true);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            {
+                cookieManager.setAcceptThirdPartyCookies(mWebviewPop, true);
             }
 
             WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
@@ -274,57 +325,32 @@ public class WebsiteViewActivity extends AppCompatActivity {
 
 
         @Override
-        public void onCloseWindow(WebView window) {
+        public void onCloseWindow(WebView window)
+        {
 
             //Toast.makeText(mContext,"onCloseWindow called",Toast.LENGTH_SHORT).show();
 
 
-            try {
+            try
+            {
                 mWebviewPop.destroy();
-            } catch (Exception e) {
+            } catch (Exception e)
+            {
 
             }
 
-            try {
+            try
+            {
                 builder.dismiss();
 
-            } catch (Exception e) {
+            } catch (Exception e)
+            {
 
             }
 
 
         }
 
-    }
-
-    public void hideKeyboard(Activity activity) {
-        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        //Find the currently focused view, so we can grab the correct window token from it.
-        View view = activity.getCurrentFocus();
-        //If no view currently has focus, create a new one, just so we can grab a window token from it
-        if (view == null) {
-            view = new View(activity);
-        }
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
-
-    private void confirmShare(String pasteData) {
-
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out my social networks on contar.io at the following link: " + pasteData);
-        sendIntent.setType("text/plain");
-        startActivity(sendIntent);
-
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mWebview.canGoBack()) {
-            mWebview.goBack();
-        } else {
-            finish();
-        }
     }
 
 }
