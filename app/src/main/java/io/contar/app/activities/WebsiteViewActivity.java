@@ -11,9 +11,6 @@ import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -25,9 +22,15 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.warhammer.defience.R;
+
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -52,20 +55,16 @@ public class WebsiteViewActivity extends AppCompatActivity
         ButterKnife.bind(this);
 
         WebSettings webSettings = mWebview.getSettings();
-        webSettings.setJavaScriptEnabled(true);
         webSettings.setAppCacheEnabled(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setSupportMultipleWindows(true);
-        webSettings.setJavaScriptEnabled(true);
         //webSettings.setAllowContentAccess(true);
         //webSettings.setAllowFileAccess(true);
         //webSettings.setDatabaseEnabled(true);
 
-        mWebview.getSettings().setSavePassword(true);
         mWebview.getSettings().setSaveFormData(true);
         mWebview.setWebViewClient(new UriWebViewClient());
         mWebview.setWebChromeClient(new UriChromeClient());
-        mWebview.getSettings().setSavePassword(true);
 
 
         CookieManager cookieManager = CookieManager.getInstance();
@@ -85,7 +84,7 @@ public class WebsiteViewActivity extends AppCompatActivity
             {
 
                 ClipboardManager clipBoard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                ClipData.Item item = clipBoard.getPrimaryClip().getItemAt(0);
+                ClipData.Item item = Objects.requireNonNull(clipBoard.getPrimaryClip()).getItemAt(0);
                 final String pasteData = item.getText().toString();
 
                 if (pasteData.contains(url) && pasteData.contains("/p/") && !alreadyShown)
@@ -134,7 +133,6 @@ public class WebsiteViewActivity extends AppCompatActivity
         url = "https://contar.io";
 
         Intent appLinkIntent = getIntent();
-        String appLinkAction = appLinkIntent.getAction();
         Uri appLinkData = appLinkIntent.getData();
 
         /*
@@ -282,8 +280,6 @@ public class WebsiteViewActivity extends AppCompatActivity
             mWebviewPop.setHorizontalScrollBarEnabled(false);
             mWebviewPop.setWebViewClient(new UriWebViewClient());
             mWebviewPop.setWebChromeClient(new UriChromeClient());
-            mWebviewPop.getSettings().setJavaScriptEnabled(true);
-            mWebviewPop.getSettings().setSavePassword(true);
             mWebviewPop.getSettings().setSaveFormData(true);
             //mWebviewPop.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
@@ -306,7 +302,7 @@ public class WebsiteViewActivity extends AppCompatActivity
             builder.setView(mWebviewPop);
 
             builder.show();
-            builder.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+            Objects.requireNonNull(builder.getWindow()).clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 
 
             CookieManager cookieManager = CookieManager.getInstance();
@@ -334,7 +330,7 @@ public class WebsiteViewActivity extends AppCompatActivity
             try
             {
                 mWebviewPop.destroy();
-            } catch (Exception e)
+            } catch (Exception ignored)
             {
 
             }
@@ -343,7 +339,7 @@ public class WebsiteViewActivity extends AppCompatActivity
             {
                 builder.dismiss();
 
-            } catch (Exception e)
+            } catch (Exception ignored)
             {
 
             }
